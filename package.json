@@ -1,0 +1,16 @@
+{
+    "name": "fitness-todo-list",
+    "version": "1.0.0",
+    "description": "Fitness To-Do List App",
+    "main": "src/worker.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "deploy": "wrangler deploy"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "wrangler": "^3.0.0"
+    }
+}

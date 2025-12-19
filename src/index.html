@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #f1f5f9;
+            --primary-color: #38bdf8;
+            --secondary-color: #a855f7;
+            --accent-color: #10b981;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(at 0% 0%, rgb(46, 7, 54) 0, transparent 50%),
+                radial-gradient(at 50% 0%, rgb(58, 30, 61) 0, transparent 50%),
+                radial-gradient(at 100% 0%, rgb(216, 95, 95) 0, transparent 50%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            height: 10px;
+            width: 100%;
+            margin-top: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .workout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-status {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-color);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: #000;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #0ea5e9;
+            box-shadow: 0 0 15px #0ea5e9;
+        }
+
+        .display-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .goal-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        input[type="number"] {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .timer-active .display-value {
+            color: var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        .timer-active .display-value {
+            color: var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        input.manual-input {
+            width: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s;
+        }
+
+        input.manual-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Number input spin button removal */
+        input.manual-input::-webkit-outer-spin-button,
+        input.manual-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input.manual-input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* Date Navigation */
+        .date-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .date-display {
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            border-radius: 12px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .date-display.past-date {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* History Panel */
+        .history-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .history-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .history-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .history-content.expanded {
+            max-height: 1000px;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-day.today {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .calendar-day.selected {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .calendar-day.complete {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .calendar-day.partial {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: #fbbf24;
+        }
+
+        .calendar-day.incomplete {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .calendar-day.empty {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .day-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .day-percentage {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
+            }
+
+            .calendar-day {
+                padding: 3px;
+            }
+
+            .day-number {
+                font-size: 0.65rem;
+            }
+
+            .day-percentage {
+                font-size: 0.55rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Player Info */
+        .player-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .player-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .player-score {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .change-name-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #94a3b8;
+            padding: 4px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .change-name-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Leaderboard */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .leaderboard-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .leaderboard-item.current-player {
+            border-color: var(--primary-color);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .leaderboard-rank.rank-1 {
+            color: #fbbf24;
+        }
+
+        .leaderboard-rank.rank-2 {
+            color: #94a3b8;
+        }
+
+        .leaderboard-rank.rank-3 {
+            color: #cd7f32;
+        }
+
+        .leaderboard-player {
+            flex: 1;
+        }
+
+        .leaderboard-player-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .leaderboard-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin: 0 0 20px 0;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .connection-status {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        .connection-status.connected {
+            color: var(--accent-color);
+        }
+
+        .connection-status.disconnected {
+            color: #ef4444;
+        }
+    </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Daily Fitness</h1>
+            <div class="date-navigation">
+                <button class="nav-btn" onclick="navigateDate(-1)">◀ Previous</button>
+                <div class="date-display" id="current-date-display">Today</div>
+                <button class="nav-btn" onclick="navigateDate(1)" id="next-btn">Next ▶</button>
+                <button class="nav-btn btn-primary" onclick="goToToday()" id="today-btn" style="display: none;">📅
+                    Today</button>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="overall-progress"></div>
+            </div>
+            <div style="text-align: right; font-size: 0.8rem; margin-top: 5px; color: #ffffff;"><span
+                    id="progress-text">0% Completed</span></div>
+            <!-- Player Info -->
+            <div class="player-info">
+                <div class="player-badge">
+                    <span>👤</span>
+                    <span class="player-name" id="player-name-display">Loading...</span>
+                    <button class="change-name-btn" onclick="changePlayerName()">Change</button>
+                </div>
+                <div class="player-badge">
+                    <span>⭐</span>
+                    <span>Score: </span>
+                    <span class="player-score" id="player-score-display">0</span>
+                </div>
+            </div>
+        </header>
+        <!-- History Panel -->
+        <div class="history-panel">
+            <div class="history-header" onclick="toggleHistory()">
+                <h3>📊 Progress History</h3>
+                <span class="toggle-icon" id="history-toggle">▼</span>
+            </div>
+            <div class="history-content" id="history-content">
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-streak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-weekly">0%</div>
+                        <div class="stat-label">Weekly Avg</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-monthly">0%</div>
+                        <div class="stat-label">Monthly Avg</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">Total Days</div>
+                    </div>
+                </div>
+                <!-- Calendar -->
+                <div class="calendar-header">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Panel -->
+        <div class="history-panel">
+            <div class="history-header" onclick="toggleLeaderboard()">
+                <h3>🏆 Global Leaderboard</h3>
+                <span class="toggle-icon" id="leaderboard-toggle">▼</span>
+            </div>
+            <div class="history-content" id="leaderboard-content">
+                <div class="connection-status" id="connection-status">
+                    Connecting...
+                </div>
+                <div class="leaderboard-list" id="leaderboard-list">
+                    <!-- Leaderboard items will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="workout-list" id="app">
+            <!-- Vertical Leg Lift -->
+            <div class="card" id="card-leg-lift">
+                <div class="card-header">
+                    <h2 class="card-title">Vertical Leg Lift</h2>
+                    <div class="card-status" id="status-leg-lift">Pending</div>
+                </div>
+                <div class="controls"><button onclick="updateReps('leg-lift', -1)">-</button><input type="number"
+                        class="display-value manual-input" id="val-leg-lift" value="0"
+                        onchange="setReps('leg-lift', this.value)"><button
+                        onclick="updateReps('leg-lift', 1)">+</button><button
+                        onclick="resetActivity('leg-lift')">Reset</button></div>
+                <div class="goal-input">Target: <input type="number" id="goal-leg-lift" value="20"
+                        onchange="updateGoal('leg-lift')">Reps </div>
+            </div>
+            <!-- Skipping -->
+            <div class="card" id="card-skipping">
+                <div class="card-header">
+                    <h2 class="card-title">Skipping</h2>
+                    <div class="card-status" id="status-skipping">Pending</div>
+                </div>
+                <div class="controls"><button onclick="updateReps('skipping', -10)">-10</button><input type="number"
+                        class="display-value manual-input" id="val-skipping" value="0"
+                        onchange="setReps('skipping', this.value)"><button
+                        onclick="updateReps('skipping', 10)">+10</button><button
+                        onclick="resetActivity('skipping')">Reset</button></div>
+                <div class="goal-input">Target: <input type="number" id="goal-skipping" value="500"
+                        onchange="updateGoal('skipping')">Reps </div>
+            </div>
+            <!-- Forearm Plank -->
+            <div class="card" id="card-forearm-plank">
+                <div class="card-header">
+                    <h2 class="card-title">Forearm Plank</h2>
+                    <div class="card-status" id="status-forearm-plank">Pending</div>
+                </div>
+                <div class="controls">
+                    <div class="display-value" id="val-forearm-plank">00:00</div><button class="btn-primary"
+                        id="btn-forearm-plank" onclick="toggleTimer('forearm-plank')">Start</button><button
+                        onclick="resetActivity('forearm-plank')">Reset</button>
+                </div>
+                <div class="goal-input">Target: <input type="number" id="goal-forearm-plank" value="60"
+                        onchange="updateGoal('forearm-plank')">Seconds </div>
+            </div>
+            <!-- Side Plank -->
+            <div class="card" id="card-side-plank">
+                <div class="card-header">
+                    <h2 class="card-title">Side Plank</h2>
+                    <div class="card-status" id="status-side-plank">Pending</div>
+                </div>
+                <div class="controls">
+                    <div class="display-value" id="val-side-plank">00:00</div><button class="btn-primary"
+                        id="btn-side-plank" onclick="toggleTimer('side-plank')">Start</button><button
+                        onclick="resetActivity('side-plank')">Reset</button>
+                </div>
+                <div class="goal-input">Target: <input type="number" id="goal-side-plank" value="30"
+                        onchange="updateGoal('side-plank')">Seconds </div>
+            </div>
+            <!-- Cobra Pose -->
+            <div class="card" id="card-cobra-pose">
+                <div class="card-header">
+                    <h2 class="card-title">Cobra Pose</h2>
+                    <div class="card-status" id="status-cobra-pose">Pending</div>
+                </div>
+                <div class="controls">
+                    <div class="display-value" id="val-cobra-pose">00:00</div><button class="btn-primary"
+                        id="btn-cobra-pose" onclick="toggleTimer('cobra-pose')">Start</button><button
+                        onclick="resetActivity('cobra-pose')">Reset</button>
+                </div>
+                <div class="goal-input">Target: <input type="number" id="goal-cobra-pose" value="30"
+                        onchange="updateGoal('cobra-pose')">Seconds </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Name Modal -->
+    <div class="modal" id="player-modal">
+        <div class="modal-content">
+            <h2>👋 Welcome!</h2>
+            <p>Enter your name to join the leaderboard:</p>
+            <input type="text" class="modal-input" id="player-name-input" placeholder="Your Name" maxlength="20">
+            <button class="btn-primary" onclick="savePlayerName()">Start Tracking</button>
+        </div>
+    </div>
+    </div>
+    <script>
+        // Player ID System
+        let playerId = null;
+        let playerName = null;
+        let leaderboardWS = null;
+
+        // Generate UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Initialize Player
+        function initPlayer() {
+            playerId = localStorage.getItem('fitness_player_id');
+            playerName = localStorage.getItem('fitness_player_name');
+
+            if (!playerId) {
+                playerId = generateUUID();
+                localStorage.setItem('fitness_player_id', playerId);
+            }
+
+            if (!playerName) {
+                // Show modal to get player name
+                document.getElementById('player-modal').classList.add('active');
+            } else {
+                document.getElementById('player-name-display').textContent = playerName;
+                initLeaderboard();
+            }
+        }
+
+        function savePlayerName() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim();
+
+            if (name.length === 0) {
+                alert('Please enter a name');
+                return;
+            }
+
+            playerName = name;
+            localStorage.setItem('fitness_player_name', playerName);
+            document.getElementById('player-name-display').textContent = playerName;
+            document.getElementById('player-modal').classList.remove('active');
+
+            initLeaderboard();
+            updateScore();
+        }
+
+        function changePlayerName() {
+            const newName = prompt('Enter new name:', playerName);
+            if (newName && newName.trim().length > 0) {
+                playerName = newName.trim();
+                localStorage.setItem('fitness_player_name', playerName);
+                document.getElementById('player-name-display').textContent = playerName;
+                updateScore();
+            }
+        }
+
+        // Score Calculation
+        function calculateScore() {
+            const today = new Date();
+            let totalPercentage = 0;
+            let daysCount = 0;
+
+            // Calculate average over last 30 days
+            for (let i = 0; i < 30; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(checkDate.getDate() - i);
+                const dateStr = getDateString(checkDate);
+                const percentage = calculateDayPercentage(dateStr);
+
+                if (percentage > 0) {
+                    totalPercentage += percentage;
+                    daysCount++;
+                }
+            }
+
+            // Return average, or 0 if no data
+            return daysCount > 0 ? Math.round(totalPercentage / daysCount) : 0;
+        }
+
+        function updateScore() {
+            const score = calculateScore();
+            document.getElementById('player-score-display').textContent = score;
+
+            // Submit score to leaderboard
+            if (playerName && leaderboardWS && leaderboardWS.readyState === WebSocket.OPEN) {
+                leaderboardWS.send(JSON.stringify({
+                    type: 'submit',
+                    playerId: playerId,
+                    playerName: playerName,
+                    score: score
+                }));
+            }
+        }
+
+        // Leaderboard WebSocket
+        function initLeaderboard() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/leaderboard/ws`;
+
+            try {
+                leaderboardWS = new WebSocket(wsUrl);
+
+                leaderboardWS.onopen = () => {
+                    console.log('Leaderboard connected');
+                    document.getElementById('connection-status').textContent = '🟢 Connected';
+                    document.getElementById('connection-status').className = 'connection-status connected';
+                    updateScore();
+                };
+
+                leaderboardWS.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'update') {
+                        updateLeaderboardUI(data.leaderboard);
+                    }
+                };
+
+                leaderboardWS.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    document.getElementById('connection-status').textContent = '🔴 Connection Error';
+                    document.getElementById('connection-status').className = 'connection-status disconnected';
+                };
+
+                leaderboardWS.onclose = () => {
+                    console.log('Leaderboard disconnected');
+                    document.getElementById('connection-status').textContent = '🔴 Disconnected';
+                    document.getElementById('connection-status').className = 'connection-status disconnected';
+
+                    // Reconnect after 5 seconds
+                    setTimeout(initLeaderboard, 5000);
+                };
+            } catch (error) {
+                console.error('Failed to connect to leaderboard:', error);
+                document.getElementById('connection-status').textContent = '🔴 Failed to Connect';
+                document.getElementById('connection-status').className = 'connection-status disconnected';
+            }
+        }
+
+        function updateLeaderboardUI(leaderboard) {
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = '';
+
+            if (!leaderboard || leaderboard.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #94a3b8;">No players yet. Be the first!</p>';
+                return;
+            }
+
+            leaderboard.forEach(player => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                if (player.playerId === playerId) {
+                    item.classList.add('current-player');
+                }
+
+                const rankEl = document.createElement('div');
+                rankEl.className = 'leaderboard-rank';
+                if (player.rank === 1) rankEl.classList.add('rank-1');
+                if (player.rank === 2) rankEl.classList.add('rank-2');
+                if (player.rank === 3) rankEl.classList.add('rank-3');
+                rankEl.textContent = `#${player.rank}`;
+
+                const playerEl = document.createElement('div');
+                playerEl.className = 'leaderboard-player';
+                const nameEl = document.createElement('div');
+                nameEl.className = 'leaderboard-player-name';
+                nameEl.textContent = player.playerName;
+                if (player.playerId === playerId) {
+                    nameEl.textContent += ' (You)';
+                }
+                playerEl.appendChild(nameEl);
+
+                const scoreEl = document.createElement('div');
+                scoreEl.className = 'leaderboard-score';
+                scoreEl.textContent = player.score;
+
+                item.appendChild(rankEl);
+                item.appendChild(playerEl);
+                item.appendChild(scoreEl);
+                listEl.appendChild(item);
+            });
+        }
+
+        function toggleLeaderboard() {
+            const content = document.getElementById('leaderboard-content');
+            const toggle = document.getElementById('leaderboard-toggle');
+            content.classList.toggle('expanded');
+            toggle.classList.toggle('expanded');
+        }
+
+        // State
+        let currentViewDate = null; // null means today
+        let progressHistory = {}; // { "2025-12-19": { ... } }
+
+        const state = {
+            'leg-lift': {
+                type: 'reps', current: 0, goal: 20
+            },
+            'skipping': {
+                type: 'reps', current: 0, goal: 500
+            },
+            'forearm-plank': {
+                type: 'timer', current: 0, goal: 60, interval: null, active: false
+            },
+            'side-plank': {
+                type: 'timer', current: 0, goal: 30, interval: null, active: false
+            },
+            'cobra-pose': {
+                type: 'timer', current: 0, goal: 30, interval: null, active: false
+            }
+        };
+
+        // Date Utilities
+        function getDateString(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getTodayString() {
+            return getDateString();
+        }
+
+        function formatDateDisplay(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (dateStr === getDateString(today)) {
+                return 'Today - ' + date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } else if (dateStr === getDateString(yesterday)) {
+                return 'Yesterday - ' + date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+                return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        }
+
+        // Load from local storage
+        function loadState() {
+            // Load history
+            const savedHistory = localStorage.getItem('fitness_history');
+            if (savedHistory) {
+                progressHistory = JSON.parse(savedHistory);
+            }
+
+            // Check if we need to reset for a new day
+            const lastDate = localStorage.getItem('fitness_last_date');
+            const today = getTodayString();
+
+            if (lastDate && lastDate !== today) {
+                // Save yesterday's progress to history
+                const yesterdayData = localStorage.getItem('fitness_todo_data');
+                if (yesterdayData) {
+                    progressHistory[lastDate] = JSON.parse(yesterdayData);
+                    saveHistory();
+                }
+                // Clear today's data (new day)
+                Object.keys(state).forEach(key => {
+                    state[key].current = 0;
+                });
+            } else {
+                // Load today's progress
+                const saved = localStorage.getItem('fitness_todo_data');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    Object.keys(state).forEach(key => {
+                        if (parsed[key]) {
+                            state[key].current = parsed[key].current;
+                            state[key].goal = parsed[key].goal;
+                        }
+                    });
+                }
+            }
+
+            // Update last date
+            localStorage.setItem('fitness_last_date', today);
+
+            // Load view date (if viewing history)
+            const viewDate = currentViewDate || today;
+            if (viewDate !== today && progressHistory[viewDate]) {
+                loadDateData(viewDate);
+            }
+
+            updateUI();
+            updateDateDisplay();
+            updateCalendar();
+            updateStats();
+        }
+
+        function saveState() {
+            const toSave = {};
+            Object.keys(state).forEach(key => {
+                toSave[key] = {
+                    current: state[key].current,
+                    goal: state[key].goal
+                };
+            });
+
+            const today = getTodayString();
+            const viewDate = currentViewDate || today;
+
+            if (viewDate === today) {
+                // Save to current day
+                localStorage.setItem('fitness_todo_data', JSON.stringify(toSave));
+                localStorage.setItem('fitness_last_date', today);
+            } else {
+                // Save to history if editing past date
+                progressHistory[viewDate] = toSave;
+                saveHistory();
+            }
+
+            updateProgress();
+            updateCalendar();
+            updateStats();
+            updateScore(); // Update score when progress changes
+        }
+
+        function saveHistory() {
+            localStorage.setItem('fitness_history', JSON.stringify(progressHistory));
+        }
+
+        function loadDateData(dateStr) {
+            if (progressHistory[dateStr]) {
+                const data = progressHistory[dateStr];
+                Object.keys(state).forEach(key => {
+                    if (data[key]) {
+                        state[key].current = data[key].current;
+                        state[key].goal = data[key].goal;
+                    } else {
+                        state[key].current = 0;
+                    }
+                });
+            } else {
+                // No data for this date
+                Object.keys(state).forEach(key => {
+                    state[key].current = 0;
+                });
+            }
+        }
+
+        // Reps Logic
+        function updateReps(id, change) {
+            state[id].current = Math.max(0, state[id].current + change);
+            saveState();
+            updateUI();
+        }
+
+        function setReps(id, value) {
+            let val = parseInt(value);
+            if (isNaN(val) || val < 0) val = 0;
+            state[id].current = val;
+            saveState();
+            updateUI();
+        }
+
+        // Timer Logic
+        function toggleTimer(id) {
+            if (state[id].active) {
+                // Stop
+                clearInterval(state[id].interval);
+                state[id].active = false;
+            }
+
+            else {
+                // Start
+                state[id].active = true;
+
+                state[id].interval = setInterval(() => {
+                    state[id].current++;
+                    saveState();
+                    updateUIItem(id);
+
+                    // Optional: Auto-stop if goal reached? No, user might want to go longer.
+                    // But we can play a sound or visual cue.
+                }
+
+                    , 1000);
+            }
+
+            updateUI();
+        }
+
+        function resetActivity(id) {
+            if (state[id].active) {
+                clearInterval(state[id].interval);
+                state[id].active = false;
+            }
+
+            state[id].current = 0;
+            saveState();
+            updateUI();
+        }
+
+        function updateGoal(id) {
+            const val = document.getElementById(`goal-${id}`).value;
+            state[id].goal = parseInt(val) || 0;
+            saveState();
+            updateUI();
+        }
+
+        // UI Updates
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+
+            return `${m}:${s}`;
+        }
+
+        function updateUIItem(id) {
+            const item = state[id];
+
+            const elVal = document.getElementById(`val-${id}`);
+
+            const elBtn = document.getElementById(`btn-${id}`);
+
+            const elGoal = document.getElementById(`goal-${id}`);
+
+            const elStatus = document.getElementById(`status-${id}`);
+
+            const elCard = document.getElementById(`card-${id}`);
+
+            // Update Manual Inputs if not focused
+            if (item.type === 'reps' && document.activeElement !== elVal) {
+                elVal.value = item.current;
+            }
+
+            // Update Inputs if not focused (prevent overwriting user typing)
+            if (document.activeElement !== elGoal) {
+                elGoal.value = item.goal;
+            }
+
+            // Display Value
+            if (item.type === 'timer') {
+                elVal.textContent = formatTime(item.current);
+
+                if (elBtn) {
+                    elBtn.textContent = item.active ? 'Pause' : 'Start';
+                    elBtn.className = item.active ? 'btn-primary' : 'btn-primary'; // Could change color
+                    elBtn.style.background = item.active ? '#ef4444' : ''; // Red stop
+                }
+
+                if (item.active) {
+                    elCard.classList.add('timer-active');
+                }
+
+                else {
+                    elCard.classList.remove('timer-active');
+                }
+            }
+
+            else {
+                if (item.type !== 'reps') {
+                    // For timers, it's a div, so textContent works. Manual inputs handled above.
+                    elVal.textContent = item.current;
+                }
+            }
+
+            // Status
+            const isComplete = item.current >= item.goal;
+
+            if (isComplete) {
+                elStatus.textContent = 'Completed';
+                elStatus.classList.add('completed');
+                elCard.style.borderColor = 'var(--accent-color)';
+            }
+
+            else {
+                elStatus.textContent = `${Math.round((item.current / item.goal) * 100)}%`;
+                elStatus.classList.remove('completed');
+                elCard.style.borderColor = 'var(--glass-border)';
+            }
+
+            updateProgress();
+        }
+
+        function updateUI() {
+            Object.keys(state).forEach(updateUIItem);
+        }
+
+        function updateProgress() {
+            // Calculate Total Progress
+            // Option 1: Average of percentages?
+            // Option 2: Binary (Complete/Not)?
+
+            // Let's use average of percentages capped at 100% per item
+            let totalPct = 0;
+            const keys = Object.keys(state);
+
+            keys.forEach(key => {
+                const item = state[key];
+
+                if (item.goal > 0) {
+                    let pct = item.current / item.goal;
+                    if (pct > 1) pct = 1;
+                    totalPct += pct;
+                }
+            });
+
+            const distinctPct = (totalPct / keys.length) * 100;
+
+            document.getElementById('overall-progress').style.width = `${distinctPct}%`;
+
+            document.getElementById('progress-text').textContent = `${Math.round(distinctPct)}% Completed`;
+        }
+
+        // Date Navigation
+        function navigateDate(direction) {
+            const today = getTodayString();
+            const currentDate = currentViewDate || today;
+            const date = new Date(currentDate + 'T00:00:00');
+            date.setDate(date.getDate() + direction);
+            const newDateStr = getDateString(date);
+
+            if (newDateStr === today) {
+                goToToday();
+                return;
+            }
+
+            // Stop any active timers
+            stopAllTimers();
+
+            currentViewDate = newDateStr;
+            loadDateData(newDateStr);
+            updateUI();
+            updateDateDisplay();
+            updateCalendar();
+        }
+
+        function goToToday() {
+            stopAllTimers();
+            currentViewDate = null;
+            loadState();
+        }
+
+        function stopAllTimers() {
+            Object.keys(state).forEach(key => {
+                if (state[key].active) {
+                    clearInterval(state[key].interval);
+                    state[key].active = false;
+                }
+            });
+        }
+
+        function updateDateDisplay() {
+            const today = getTodayString();
+            const viewDate = currentViewDate || today;
+            const displayEl = document.getElementById('current-date-display');
+            const nextBtn = document.getElementById('next-btn');
+            const todayBtn = document.getElementById('today-btn');
+
+            displayEl.textContent = formatDateDisplay(viewDate);
+
+            if (viewDate !== today) {
+                displayEl.classList.add('past-date');
+                todayBtn.style.display = 'inline-block';
+            } else {
+                displayEl.classList.remove('past-date');
+                todayBtn.style.display = 'none';
+            }
+
+            // Hide next button if viewing today
+            nextBtn.style.display = viewDate === today ? 'none' : 'inline-block';
+        }
+
+        // History Panel
+        function toggleHistory() {
+            const content = document.getElementById('history-content');
+            const toggle = document.getElementById('history-toggle');
+            content.classList.toggle('expanded');
+            toggle.classList.toggle('expanded');
+        }
+
+        // Calendar
+        function updateCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            const today = new Date();
+            const todayStr = getDateString(today);
+            const viewDate = currentViewDate || todayStr;
+
+            // Get first day of current month (using UTC to avoid timezone issues)
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1);
+
+            // Adjust to start from Sunday
+            const startDay = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const startDate = new Date(year, month, 1 - startDay);
+
+            // Calculate how many days to show (enough to cover the month)
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const daysInMonth = lastDayOfMonth.getDate();
+            const totalDays = Math.ceil((startDay + daysInMonth) / 7) * 7; // Round up to complete weeks
+
+            const currentDate = new Date(startDate);
+
+            for (let i = 0; i < totalDays; i++) {
+                const dateStr = getDateString(currentDate);
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+
+                const dayNum = document.createElement('div');
+                dayNum.className = 'day-number';
+                dayNum.textContent = currentDate.getDate();
+
+                const dayPct = document.createElement('div');
+                dayPct.className = 'day-percentage';
+
+                // Check if date is in the future or not in current month
+                const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
+
+                if (dateStr > todayStr || !isCurrentMonth) {
+                    dayEl.classList.add('empty');
+                    dayPct.textContent = '-';
+                } else {
+                    const percentage = calculateDayPercentage(dateStr);
+                    dayPct.textContent = percentage + '%';
+
+                    if (percentage === 100) {
+                        dayEl.classList.add('complete');
+                    } else if (percentage >= 50) {
+                        dayEl.classList.add('partial');
+                    } else if (percentage > 0) {
+                        dayEl.classList.add('incomplete');
+                    }
+
+                    if (dateStr === todayStr) {
+                        dayEl.classList.add('today');
+                    }
+
+                    if (dateStr === viewDate) {
+                        dayEl.classList.add('selected');
+                    }
+
+                    dayEl.onclick = () => viewDateData(dateStr);
+                }
+
+                dayEl.appendChild(dayNum);
+                dayEl.appendChild(dayPct);
+                grid.appendChild(dayEl);
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        function calculateDayPercentage(dateStr) {
+            const today = getTodayString();
+            let data;
+
+            if (dateStr === (currentViewDate || today)) {
+                // This is the date currently displayed in the cards
+                data = state;
+            } else if (dateStr === today) {
+                // We want today's data but we are viewing history
+                const saved = localStorage.getItem('fitness_todo_data');
+                data = saved ? JSON.parse(saved) : null;
+            } else if (progressHistory[dateStr]) {
+                // Past date not currently viewed
+                data = progressHistory[dateStr];
+            } else {
+                return 0;
+            }
+
+            let totalPct = 0;
+            const keys = Object.keys(state);
+
+            keys.forEach(key => {
+                const item = data[key] || { current: 0, goal: state[key].goal };
+                if (item.goal > 0) {
+                    let pct = item.current / item.goal;
+                    if (pct > 1) pct = 1;
+                    totalPct += pct;
+                }
+            });
+
+            return Math.round((totalPct / keys.length) * 100);
+        }
+
+        function viewDateData(dateStr) {
+            const today = getTodayString();
+            if (dateStr === today) {
+                goToToday();
+                return;
+            }
+            stopAllTimers();
+            currentViewDate = dateStr;
+            loadDateData(dateStr);
+            updateUI();
+            updateDateDisplay();
+            updateCalendar();
+        }
+
+        // Statistics
+        function updateStats() {
+            // Calculate streak - FIXED VERSION
+            let streak = 0;
+            const today = new Date();
+            const todayStr = getTodayString();
+
+            // Start checking from yesterday
+            const checkDate = new Date(today);
+            checkDate.setDate(checkDate.getDate() - 1);
+
+            // Count consecutive 100% days going backwards from yesterday
+            while (true) {
+                const dateStr = getDateString(checkDate);
+                const pct = calculateDayPercentage(dateStr);
+                if (pct === 100) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            // Add today to streak if it's 100% complete
+            const todayPct = calculateDayPercentage(todayStr);
+            if (todayPct === 100) {
+                streak++;
+            }
+
+            // Calculate weekly average (last 7 days)
+            let weeklyTotal = 0;
+            const weekDate = new Date(today);
+            for (let i = 0; i < 7; i++) {
+                weeklyTotal += calculateDayPercentage(getDateString(weekDate));
+                weekDate.setDate(weekDate.getDate() - 1);
+            }
+            const weeklyAvg = Math.round(weeklyTotal / 7);
+
+            // Calculate monthly average (last 30 days)
+            let monthlyTotal = 0;
+            const monthDate = new Date(today);
+            for (let i = 0; i < 30; i++) {
+                monthlyTotal += calculateDayPercentage(getDateString(monthDate));
+                monthDate.setDate(monthDate.getDate() - 1);
+            }
+            const monthlyAvg = Math.round(monthlyTotal / 30);
+
+            // Count total days with data
+            let totalDays = 0;
+            Object.keys(progressHistory).forEach(dateStr => {
+                if (calculateDayPercentage(dateStr) > 0) {
+                    totalDays++;
+                }
+            });
+            // Add today if has data
+            if (calculateDayPercentage(getTodayString()) > 0) {
+                totalDays++;
+            }
+
+            // Update UI
+            document.getElementById('stat-streak').textContent = streak;
+            document.getElementById('stat-weekly').textContent = weeklyAvg + '%';
+            document.getElementById('stat-monthly').textContent = monthlyAvg + '%';
+            document.getElementById('stat-total').textContent = totalDays;
+        }
+
+        // Init
+        initPlayer();
+        loadState();
+
+        // Check for date change every minute
+        setInterval(() => {
+            const today = getTodayString();
+            const lastDate = localStorage.getItem('fitness_last_date');
+            if (lastDate && lastDate !== today) {
+                // New day detected, reload
+                location.reload();
+            }
+        }, 60000);
+
+    </script>
+</body>
+
+</html>
