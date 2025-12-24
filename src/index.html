@@ -7,13 +7,13 @@
     <title>Fitness Tracker</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text-color: #f1f5f9;
-            --primary-color: #38bdf8;
-            --secondary-color: #a855f7;
-            --accent-color: #10b981;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --bg-color: #fff5f8;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --text-color: #d81b60;
+            --primary-color: #f06292;
+            --secondary-color: #f8bbd0;
+            --accent-color: #29ce73;
+            --glass-border: 1px solid rgba(224, 15, 214, 0.2);
         }
 
         body {
@@ -22,9 +22,9 @@
             padding: 0;
             background-color: var(--bg-color);
             background-image:
-                radial-gradient(at 0% 0%, rgb(46, 7, 54) 0, transparent 50%),
-                radial-gradient(at 50% 0%, rgb(58, 30, 61) 0, transparent 50%),
-                radial-gradient(at 100% 0%, rgb(216, 95, 95) 0, transparent 50%);
+                radial-gradient(at 0% 0%, #fff5f8 0, transparent 50%),
+                radial-gradient(at 50% 0%, #fce4ec 0, transparent 50%),
+                radial-gradient(at 100% 0%, #f8bbd0 0, transparent 50%);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
@@ -56,7 +56,7 @@
         }
 
         .progress-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(83, 56, 56, 0.192);
             border-radius: 20px;
             height: 10px;
             width: 100%;
@@ -129,9 +129,9 @@
         }
 
         button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(216, 27, 96, 0.05);
+            border: 1px solid rgba(216, 27, 96, 0.2);
+            color: var(--text-color);
             padding: 10px 20px;
             border-radius: 12px;
             cursor: pointer;
@@ -150,7 +150,7 @@
 
         .btn-primary {
             background: var(--primary-color);
-            color: #000;
+            color: white;
             border: none;
             font-weight: 600;
         }
@@ -179,8 +179,8 @@
         input[type="number"] {
             background: transparent;
             border: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
+            border-bottom: 1px solid rgba(216, 27, 96, 0.3);
+            color: var(--text-color);
             width: 50px;
             text-align: center;
             font-size: 1rem;
@@ -224,7 +224,7 @@
             background: transparent;
             border: none;
             color: var(--text-color);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(216, 27, 96, 0.1);
             transition: border-color 0.3s;
         }
 
@@ -503,7 +503,7 @@
 
         .change-name-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            color: white;
+            color: var(--text-color);
         }
 
         /* Leaderboard */
@@ -616,7 +616,7 @@
             background: rgba(255, 255, 255, 0.05);
             border: var(--glass-border);
             border-radius: 12px;
-            color: white;
+            color: var(--text-color);
             font-size: 1rem;
             margin-bottom: 20px;
             box-sizing: border-box;
@@ -661,7 +661,7 @@
             <div class="progress-container">
                 <div class="progress-bar" id="overall-progress"></div>
             </div>
-            <div style="text-align: right; font-size: 0.8rem; margin-top: 5px; color: #ffffff;"><span
+            <div style="text-align: right; font-size: 0.8rem; margin-top: 5px; color: var(--text-color);"><span
                     id="progress-text">0% Completed</span></div>
             <!-- Player Info -->
             <div class="player-info">
@@ -883,23 +883,17 @@
         function calculateScore() {
             const today = new Date();
             let totalPercentage = 0;
-            let daysCount = 0;
 
             // Calculate average over last 30 days
             for (let i = 0; i < 30; i++) {
                 const checkDate = new Date(today);
                 checkDate.setDate(checkDate.getDate() - i);
                 const dateStr = getDateString(checkDate);
-                const percentage = calculateDayPercentage(dateStr);
-
-                if (percentage > 0) {
-                    totalPercentage += percentage;
-                    daysCount++;
-                }
+                totalPercentage += calculateDayPercentage(dateStr);
             }
 
-            // Return average, or 0 if no data
-            return daysCount > 0 ? Math.round(totalPercentage / daysCount) : 0;
+            // Return monthly average
+            return Math.round(totalPercentage / 30);
         }
 
         function updateScore() {
@@ -1518,7 +1512,7 @@
 
         // Statistics
         function updateStats() {
-            // Calculate streak - FIXED VERSION
+            // Calculate streak
             let streak = 0;
             const today = new Date();
             const todayStr = getTodayString();
